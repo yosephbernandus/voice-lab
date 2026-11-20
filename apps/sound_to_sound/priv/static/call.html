@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eeece3">
+  <title>WebRTC call · Voice lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/call.css">
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <a href="/" aria-label="Voice lab home">voice lab<span class="brand-mark" aria-hidden="true">∿</span></a>
+      <span>WEBRTC AUDIO CALL</span>
+      <span class="edition">SOUND → SOUND</span>
+    </header>
+    <section class="intro" aria-labelledby="title">
+      <div>
+        <p class="eyebrow">A WEBRTC AUDIO CALL</p>
+        <h1 id="title">Open a line.<br><em>Hear the other end.</em></h1>
+        <p class="intro-subtitle">WebRTC carries audio directly when possible, or through a configured relay.</p>
+      </div>
+      <aside class="intro-note">
+        <span class="note-rule"></span>
+        <p>This call is separate from the custom packet impairment lab. The lab models packet delivery; this page negotiates an actual WebRTC audio connection.</p>
+        <p class="small">Two peers per room. Use the same room and codec on both devices.</p>
+      </aside>
+    </section>
+    <section class="call-grid" aria-label="Call setup and live connection">
+      <form id="call-form" class="call-panel">
+        <p class="eyebrow">SET UP THE LINE</p>
+        <label for="room">Room <span class="hint">8–48 letters, numbers, _ or -</span></label>
+        <div class="room-row"><input id="room" name="room" minlength="8" maxlength="48" pattern="[A-Za-z0-9_-]{8,48}" autocomplete="off" required><button id="new-room" type="button">New room</button><button id="copy-room" type="button">Copy</button></div>
+        <label for="codec">Codec</label>
+        <select id="codec" name="codec"><option value="pcmu">G.711 μ-law · PCMU / 8 kHz</option><option value="opus">Opus · 48 kHz</option></select>
+        <label for="source">Send source</label>
+        <select id="source" name="source"><option value="microphone">Microphone</option><option value="fixture">Comparison fixture · Indonesian speech</option><option value="receive">Receive only</option></select>
+        <p class="field-note">The fixture starts as mono 48 kHz PCM; the selected WebRTC codec encodes it for transmission. Receive-only does not request microphone access.</p>
+        <button id="join" class="primary" type="submit">Join room</button>
+        <button id="stop" type="button" disabled>Stop call</button>
+        <p id="status" class="call-status" role="status" aria-live="polite">Ready to join.</p>
+        <p id="error" class="call-error" role="alert" hidden></p>
+      </form>
+      <section class="live-panel" aria-labelledby="live-heading">
+        <div class="live-head">
+          <div><p class="eyebrow">LIVE CONNECTION</p><h2 id="live-heading">Listen and observe</h2></div>
+          <span class="state-chip" id="connection-state">Idle</span>
+        </div>
+        <audio id="remote-audio" autoplay controls playsinline aria-label="Remote caller audio"></audio>
+        <p id="playback-note" class="field-note" hidden>Playback is blocked. Press Play above to hear the caller.</p>
+        <p id="relay-note" class="field-note">Waiting for signaling admission details.</p>
+        <div class="fixture-row"><button id="replay" type="button" disabled>Replay fixture</button><span id="source-state" class="field-note">No source prepared.</span></div>
+        <p class="eyebrow stats-title">OBSERVED RTP · NOT THE SELECTED SETTING</p>
+        <dl class="stats">
+          <div><dt>Outbound codec</dt><dd id="out-codec">Unknown</dd></div>
+          <div><dt>Inbound codec</dt><dd id="in-codec">Unknown</dd></div>
+          <div><dt>Transport</dt><dd id="route">Unknown</dd></div>
+          <div><dt>Payload rate</dt><dd id="rate">Unknown</dd></div>
+          <div><dt>Packets sent / received</dt><dd id="packets">Unknown / Unknown</dd></div>
+          <div><dt>Jitter</dt><dd id="jitter">Unknown</dd></div>
+          <div><dt>Round-trip time</dt><dd id="rtt">Unknown</dd></div>
+        </dl>
+        <p class="field-note">Route and codec appear only when reported by this browser. RTT is round-trip time, not one-way audio latency.</p>
+      </section>
+    </section>
+    <footer>
+      <p>WebRTC media · signaling over WebSocket<br>Audio may travel directly or through a configured relay.</p>
+      <a href="/">Return to the custom packet impairment lab</a>
+    </footer>
+  </main>
+  <script type="module" src="/call.js"></script>
+</body>
+</html>

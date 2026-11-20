@@ -1,0 +1,10 @@
+{
+  "name": "voice-lab-reference",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "conformance": "python3 conformance/run.py",
+    "test:sound": "cd apps/sound_to_sound && mix test",
+    "test": "npm run conformance && npm run test:sound"
+  }
+}

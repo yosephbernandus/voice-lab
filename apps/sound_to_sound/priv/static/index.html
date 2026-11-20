@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#eeece3">
+  <title>From Air to Packets and Back: How Voice Travels Between Devices</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <a href="/" aria-label="Voice lab home">voice lab<span class="brand-mark" aria-hidden="true">∿</span></a>
+      <span>AN EXPERIMENT IN LISTENING</span>
+      <span class="edition">SOUND → SOUND</span>
+    </header>
+    <nav class="call-link"><a href="/call">Start a WebRTC call</a><span>Separate from the custom packet impairment lab below.</span></nav>
+
+    <section class="intro" aria-labelledby="title">
+      <div>
+        <p class="eyebrow">FROM PRESSURE TO PLAYBACK</p>
+        <h1 id="title" aria-label="From Air to Packets and Back: How Voice Travels Between Devices">From air to packets. <em>And back.</em></h1>
+        <p class="intro-subtitle">How voice travels between devices.</p>
+      </div>
+      <div class="intro-note">
+        <span class="note-rule"></span>
+        <p>Follow one sound from air pressure to a speaker. The clean line comes first; packet loss is an optional experiment.</p>
+        <p class="small">A small telephone experiment by Yoseph Bernandus.</p>
+      </div>
+    </section>
+
+    <details class="journey">
+      <summary>Follow the voice journey <span>pressure → PCM → packet → speaker</span></summary>
+      <div class="journey-body">
+        <div class="journey-heading">
+          <p class="eyebrow">THE VOICE JOURNEY</p>
+          <h2>One sound, one path.</h2>
+          <p class="small">Follow the stages. Device hardware sits outside this page.</p>
+        </div>
+        <ol class="journey-track">
+          <li class="journey-stage hardware-stage"><span class="stage-number">01</span><span class="stage-boundary">DEVICE HARDWARE · OUTSIDE JAVASCRIPT</span><strong>Air pressure → microphone → ADC</strong><p>Pressure moves a microphone membrane; the device samples its voltage.</p></li>
+          <li class="journey-stage"><span class="stage-number">02</span><span class="stage-boundary">BROWSER + LAB JAVASCRIPT</span><strong>Digital PCM → low-pass → downsample to 8 kHz → μ-law</strong><p>The browser holds samples; the lab filters, resamples, and encodes each frame.</p></li>
+          <li class="journey-stage"><span class="stage-number">03</span><span class="stage-boundary">RELAY (ELIXIR) + RECEIVER (BROWSER)</span><strong>Packets → relay → receiver buffer → decode</strong><p>Frames carry identity and timing before the listener gets them.</p></li>
+          <li class="journey-stage hardware-stage"><span class="stage-number">04</span><span class="stage-boundary">DEVICE HARDWARE · OUTSIDE JAVASCRIPT</span><strong>DAC → output circuit → speaker → air</strong><p>The receiving device turns numbers back into pressure.</p></li>
+        </ol>
+      </div>
+    </details>
+
+    <section class="instrument" aria-label="Live audio instrument">
+      <div class="instrument-top">
+        <span><i class="status-light" aria-hidden="true"></i> <strong id="state" role="status">idle</strong></span>
+        <span>G.711 μ-LAW <b> / </b> 8 kHz <b> / </b> 20 ms FRAMES</span>
+        <button id="motion" aria-pressed="false" type="button">Pause motion</button>
+      </div>
+      <div class="scope-labels">
+        <span><i class="legend-input"></i> <span id="input-source-label">YOUR MICROPHONE</span> <small>frame peak</small></span>
+        <span><i class="legend-output"></i> THIS SPEAKER <small>frame peak</small></span>
+      </div>
+      <div class="scope-wrap">
+        <canvas id="signal-scope" aria-label="Recent local source and speaker frame peaks, with received or concealed playout frames"></canvas>
+        <p id="scope-message">The trace begins when you do.</p>
+      </div>
+      <div class="scope-bottom">
+        <span>RECENT PLAYOUT <i class="legend-output"></i> received <i class="legend-loss"></i> concealed</span>
+        <span id="trace-status">Waiting for microphone</span>
+      </div>
+    </section>
+
+    <section class="workbench" aria-label="Experiment controls">
+      <div class="session-panel">
+        <p class="eyebrow">OPEN THE LINE</p>
+        <div class="buttons">
+          <button id="start" class="primary" type="button">Start microphone <span aria-hidden="true">↗</span></button>
+          <button id="fixture" type="button">Send Indonesian fixture</button>
+          <button id="stop" type="button" disabled>Stop</button>
+        </div>
+        <p class="small">Use headphones and one device per listener. The fixture sends on this device with no microphone permission. The listener preset controls the sound that listener receives; alone, you hear your own loopback. Selecting a scenario during a fixture starts the same phrase again from packet 0.</p>
+        <p id="fixture-status" class="small" role="status" hidden></p>
+        <p id="error" role="alert" hidden></p>
+      </div>
+      <div class="loss-panel">
+        <label class="control-heading" for="scenario"><span>Listener scenario</span></label>
+        <select id="scenario" aria-describedby="scenario-note">
+          <option value="clean" selected>Clean baseline</option>
+          <option value="broken">Broken · 20% loss</option>
+          <option value="late">Late · 20% reordered / 300 ms</option>
+          <option value="delayed">Delayed · 500 ms</option>
+          <option value="custom">Custom manual policy</option>
+        </select>
+        <p id="scenario-note" class="small">Clean baseline. This listener configures the sound heard on this device; the sender is unchanged.</p>
+        <button id="reset-clean" type="button">Reset clean · seed 42</button>
+        <label class="control-heading" for="loss"><span>Optional packet loss</span><output id="loss-value">0%</output></label>
+        <input id="loss" type="range" min="0" max="20" value="0" aria-describedby="loss-help">
+        <div class="range-ends"><span>clean delivery</span><span>rough connection</span></div>
+        <p id="loss-help" class="small">Loss is injected at the relay, before audio reaches this listener.</p>
+      </div>
+      <div class="strategy-panel">
+        <label class="control-heading" for="strategy">When a frame is missing</label>
+        <select id="strategy">
+          <option value="silence" selected>Leave silence</option>
+          <option value="repeat">Repeat the last frame</option>
+          <option value="fade">Repeat at half volume</option>
+        </select>
+        <p class="small" id="strategy-note">A gap stays silent until a good frame arrives.</p>
+      </div>
+    </section>
+
+    <section class="reading-row" aria-label="Session readings">
+      <div><span>Source packets sent</span><strong id="sent">0</strong></div>
+      <div><span>Listener packets accepted</span><strong id="received">0</strong></div>
+      <div><span>Frames concealed</span><strong id="concealed">0</strong></div>
+      <div><span>Late packets discarded</span><strong id="late-discarded">0</strong></div>
+      <div><span>Recoveries</span><strong id="recoveries">0</strong></div>
+      <div><span>Receiver state · generation</span><strong id="buffer-state">buffering</strong><small id="buffer-generation">—</small></div>
+      <p>Delivery is one thing.<br><em>Being on time is another.</em><br><span class="small">Receiver readings reset with each stream generation; source and listener counts are separate.</span></p>
+    </section>
+
+    <details class="advanced">
+      <summary>Optional timing experiments <span>reorder, lateness, latency &amp; seed</span></summary>
+      <div class="advanced-grid">
+        <label>Reorder <output id="reorder-value">0%</output><input id="reorder" type="range" min="0" max="20" value="0"></label>
+        <label>Reorder lateness <output id="delay-value">0 ms</output><input id="delay" type="range" min="0" max="500" step="20" value="0"></label>
+        <label>Baseline latency <output id="latency-value">0 ms</output><input id="latency" type="range" min="0" max="1000" step="20" value="0"></label>
+        <label>Random seed<input id="seed" type="number" min="0" max="2147483647" value="42"></label>
+      </div>
+      <p class="small">Reorder lateness applies only to selected packets. Baseline latency applies to every frame this listener receives. The receiver starts after 3 frames (60 ms), then rebuffers after 6 empty playout ticks or 3 far-ahead misses; it rebases on 3 fresh packets. Same input, policy and seed give the same impairment decisions.</p>
+    </details>
+
+    <footer>
+      <p>A teaching model inspired by moving into voice infrastructure at RevComm.<br>Two connections per room. With a peer, microphone and speaker traces show different sources.</p>
+      <span>PCM → PACKET → EAR</span>
+    </footer>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
