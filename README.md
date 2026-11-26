@@ -16,6 +16,7 @@ IMPLEMENTATION.md      coverage table and verification record
 HANDOFF.md             current state
 flake.nix, flake.lock  pinned toolchain (Elixir, Node 22, Python 3, jq, git)
 ```
+Live: <https://sound-to-sound.yosephbernandus.com>
 
 ## Prerequisites
 
